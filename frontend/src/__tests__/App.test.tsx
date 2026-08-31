@@ -9,9 +9,9 @@ vi.mock('../api/health-api', () => ({
 }));
 
 describe('Frontend App Foundation', () => {
-  it('renders application title and navigation items', async () => {
+  it('renders application title and sign in form for unauthenticated users', async () => {
     render(<App />);
     expect(await screen.findByText('Loan Management SaaS')).toBeInTheDocument();
-    expect(screen.getByText('System Dashboard')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sign In/i })).toBeInTheDocument();
   });
 });

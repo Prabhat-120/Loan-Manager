@@ -5,9 +5,10 @@ const refreshTokenSchema = new Schema<IRefreshToken>(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant' },
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    token: { type: String, required: true, unique: true, index: true },
+    tokenHash: { type: String, required: true, unique: true, index: true },
     expiresAt: { type: Date, required: true },
-    isRevoked: { type: Boolean, default: false },
+    revokedAt: { type: Date },
+    replacedByTokenId: { type: Schema.Types.ObjectId, ref: 'RefreshToken' },
     deviceInfo: { type: String }
   },
   {
