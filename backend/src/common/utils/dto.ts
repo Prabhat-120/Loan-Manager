@@ -156,3 +156,181 @@ export const formatPersonDTO = (person: any, linkedUserEmail?: string): PersonDT
     updatedAt: person.updatedAt
   };
 };
+
+export interface RepaymentScheduleDTO {
+  id: string;
+  tenantId: string;
+  loanId: string;
+  installmentNumber: number;
+  dueDate: Date;
+  openingPrincipal: string;
+  scheduledPrincipal: string;
+  scheduledInterest: string;
+  scheduledAmount: string;
+  paidPrincipal: string;
+  paidInterest: string;
+  paidAmount: string;
+  remainingAmount: string;
+  status: string;
+  paidAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface LoanDTO {
+  id: string;
+  tenantId: string;
+  loanNumber: string;
+  lenderPersonId: string;
+  borrowerPersonId: string;
+  loanType: string;
+  principalAmount: string;
+  interestRate: string;
+  interestRateType: string;
+  interestCalculationMethod: string;
+  termMonths: number;
+  startDate: Date;
+  firstDueDate: Date;
+  maturityDate?: Date;
+  paymentFrequency: string;
+  status: string;
+  totalInterest: string;
+  totalPayable: string;
+  totalPaid: string;
+  outstandingPrincipal: string;
+  outstandingInterest: string;
+  outstandingTotal: string;
+  notes?: string;
+  createdBy: string;
+  updatedBy?: string;
+  lender?: PersonDTO;
+  borrower?: PersonDTO;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface LoanFinancialSummaryDTO {
+  principal: string;
+  interestRate: string;
+  totalInterest: string;
+  totalPayable: string;
+  totalPaid: string;
+  outstandingPrincipal: string;
+  outstandingInterest: string;
+  outstandingTotal: string;
+}
+
+export interface LoanDetailDTO {
+  loan: LoanDTO;
+  lender: PersonDTO;
+  borrower: PersonDTO;
+  financialSummary: LoanFinancialSummaryDTO;
+  scheduleSummary: {
+    totalInstallments: number;
+    pendingInstallments: number;
+    paidInstallments: number;
+    overdueInstallments: number;
+  };
+}
+
+const to2Dec = (val: any): string => {
+  if (val === undefined || val === null) return '0.00';
+  const num = parseFloat(val.toString());
+  return isNaN(num) ? '0.00' : num.toFixed(2);
+};
+
+export const formatRepaymentScheduleDTO = (item: any): RepaymentScheduleDTO => {
+  return {
+    id: item._id ? item._id.toString() : item.id,
+    tenantId: item.tenantId ? item.tenantId.toString() : item.tenantId,
+    loanId: item.loanId ? item.loanId.toString() : item.loanId,
+    installmentNumber: item.installmentNumber,
+    dueDate: item.dueDate,
+    openingPrincipal: to2Dec(item.openingPrincipal),
+    scheduledPrincipal: to2Dec(item.scheduledPrincipal),
+    scheduledInterest: to2Dec(item.scheduledInterest),
+    scheduledAmount: to2Dec(item.scheduledAmount),
+    paidPrincipal: to2Dec(item.paidPrincipal),
+    paidInterest: to2Dec(item.paidInterest),
+    paidAmount: to2Dec(item.paidAmount),
+    remainingAmount: to2Dec(item.remainingAmount),
+    status: item.status,
+    paidAt: item.paidAt,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt
+  };
+};
+
+export const formatLoanDTO = (loan: any, lender?: any, borrower?: any): LoanDTO => {
+  const principalAmount = to2Dec(loan.principalAmount);
+  const interestRate = to2Dec(loan.interestRate);
+  const totalInterest = to2Dec(loan.totalInterest);
+  const totalPayable = to2Dec(loan.totalPayable);
+  const totalPaid = to2Dec(loan.totalPaid);
+  const outstandingPrincipal = to2Dec(loan.outstandingPrincipal);
+  const outstandingInterest = to2Dec(loan.outstandingInterest);
+  const outstandingTotal = (parseFloat(outstandingPrincipal) + parseFloat(outstandingInterest)).toFixed(2);
+
+  return {
+    id: loan._id ? loan._id.toString() : loan.id,
+    tenantId: loan.tenantId ? loan.tenantId.toString() : loan.tenantId,
+    loanNumber: loan.loanNumber,
+    lenderPersonId: loan.lenderPersonId ? (loan.lenderPersonId._id ? loan.lenderPersonId._id.toString() : loan.lenderPersonId.toString()) : '',
+    borrowerPersonId: loan.borrowerPersonId ? (loan.borrowerPersonId._id ? loan.borrowerPersonId._id.toString() : loan.borrowerPersonId.toString()) : '',
+    loanType: loan.loanType,
+    principalAmount,
+    interestRate,
+    interestRateType: loan.interestRateType || 'PERCENTAGE_PER_YEAR',
+    interestCalculationMethod: loan.interestCalculationMethod,
+    termMonths: loan.termMonths,
+    startDate: loan.startDate,
+    firstDueDate: loan.firstDueDate,
+    maturityDate: loan.maturityDate,
+    paymentFrequency: loan.paymentFrequency,
+    status: loan.status,
+    totalInterest,
+    totalPayable,
+    totalPaid,
+    outstandingPrincipal,
+    outstandingInterest,
+    outstandingTotal,
+    notes: loan.notes,
+    createdBy: loan.createdBy ? loan.createdBy.toString() : '',
+    updatedBy: loan.updatedBy ? loan.updatedBy.toString() : undefined,
+    lender: lender ? formatPersonDTO(lender) : undefined,
+    borrower: borrower ? formatPersonDTO(borrower) : undefined,
+    createdAt: loan.createdAt,
+    updatedAt: loan.updatedAt
+  };
+};
+
+export const formatLoanDetailDTO = (
+  loan: any,
+  lender: any,
+  borrower: any,
+  scheduleStats?: { total: number; pending: number; paid: number; overdue: number }
+): LoanDetailDTO => {
+  const loanDTO = formatLoanDTO(loan, lender, borrower);
+  return {
+    loan: loanDTO,
+    lender: formatPersonDTO(lender),
+    borrower: formatPersonDTO(borrower),
+    financialSummary: {
+      principal: loanDTO.principalAmount,
+      interestRate: loanDTO.interestRate,
+      totalInterest: loanDTO.totalInterest,
+      totalPayable: loanDTO.totalPayable,
+      totalPaid: loanDTO.totalPaid,
+      outstandingPrincipal: loanDTO.outstandingPrincipal,
+      outstandingInterest: loanDTO.outstandingInterest,
+      outstandingTotal: loanDTO.outstandingTotal
+    },
+    scheduleSummary: {
+      totalInstallments: scheduleStats?.total || 0,
+      pendingInstallments: scheduleStats?.pending || 0,
+      paidInstallments: scheduleStats?.paid || 0,
+      overdueInstallments: scheduleStats?.overdue || 0
+    }
+  };
+};
+

@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { personApi } from '../../api/person-api';
+import { loanApi } from '../../api/loan-api';
 
 export const PersonDetailPage: React.FC = () => {
   const { personId } = useParams<{ personId: string }>();
@@ -9,6 +10,18 @@ export const PersonDetailPage: React.FC = () => {
   const { data: person, isLoading, error } = useQuery({
     queryKey: ['personDetail', personId],
     queryFn: () => personApi.getPersonById(personId!),
+    enabled: !!personId
+  });
+
+  const { data: loansGivenData } = useQuery({
+    queryKey: ['personLoansGiven', personId],
+    queryFn: () => loanApi.getLoansGivenByPerson(personId!),
+    enabled: !!personId
+  });
+
+  const { data: loansTakenData } = useQuery({
+    queryKey: ['personLoansTaken', personId],
+    queryFn: () => loanApi.getLoansTakenByPerson(personId!),
     enabled: !!personId
   });
 
@@ -33,6 +46,9 @@ export const PersonDetailPage: React.FC = () => {
       </div>
     );
   }
+
+  const loansGiven = loansGivenData?.loans || [];
+  const loansTaken = loansTakenData?.loans || [];
 
   return (
     <div className="space-y-6">
@@ -111,12 +127,102 @@ export const PersonDetailPage: React.FC = () => {
             </div>
           )}
 
-          {/* Financial Summary Placeholder Notice */}
-          <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-400 space-y-1">
-            <span className="font-semibold text-slate-300 uppercase tracking-wider block">Financial History</span>
-            <p>Loans given / taken and payment history will appear here when Loan Module is active.</p>
+          {/* Quick Loan Statistics */}
+          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800">
+            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+              <span className="text-xs text-slate-500 uppercase font-semibold">Loans Given (Lender)</span>
+              <div className="text-lg font-bold text-indigo-400 mt-0.5">{loansGiven.length}</div>
+            </div>
+            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+              <span className="text-xs text-slate-500 uppercase font-semibold">Loans Taken (Borrower)</span>
+              <div className="text-lg font-bold text-emerald-400 mt-0.5">{loansTaken.length}</div>
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Loans Given Section */}
+      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+        <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-2 flex justify-between items-center">
+          <span>Loans Given (Lender)</span>
+          <span className="text-xs font-normal text-slate-400">{loansGiven.length} records</span>
+        </h2>
+        {loansGiven.length === 0 ? (
+          <div className="py-6 text-center text-sm text-slate-500">No loans given by this person.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="uppercase bg-slate-950 text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th className="px-3 py-2">Loan #</th>
+                  <th className="px-3 py-2">Borrower</th>
+                  <th className="px-3 py-2">Principal</th>
+                  <th className="px-3 py-2">Type</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800 font-mono">
+                {loansGiven.map((l) => (
+                  <tr key={l.id} className="hover:bg-slate-800/40">
+                    <td className="px-3 py-2 text-indigo-400 font-bold">{l.loanNumber}</td>
+                    <td className="px-3 py-2 font-sans text-white">{l.borrower?.displayName || '—'}</td>
+                    <td className="px-3 py-2">₹{l.principalAmount}</td>
+                    <td className="px-3 py-2 text-slate-400">{l.loanType}</td>
+                    <td className="px-3 py-2 font-sans">{l.status}</td>
+                    <td className="px-3 py-2 text-right font-sans">
+                      <Link to={`/loans/${l.id}`} className="text-indigo-400 hover:underline">
+                        View →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Loans Taken Section */}
+      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+        <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-2 flex justify-between items-center">
+          <span>Loans Taken (Borrower)</span>
+          <span className="text-xs font-normal text-slate-400">{loansTaken.length} records</span>
+        </h2>
+        {loansTaken.length === 0 ? (
+          <div className="py-6 text-center text-sm text-slate-500">No loans taken by this person.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="uppercase bg-slate-950 text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th className="px-3 py-2">Loan #</th>
+                  <th className="px-3 py-2">Lender</th>
+                  <th className="px-3 py-2">Principal</th>
+                  <th className="px-3 py-2">Type</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800 font-mono">
+                {loansTaken.map((l) => (
+                  <tr key={l.id} className="hover:bg-slate-800/40">
+                    <td className="px-3 py-2 text-indigo-400 font-bold">{l.loanNumber}</td>
+                    <td className="px-3 py-2 font-sans text-white">{l.lender?.displayName || '—'}</td>
+                    <td className="px-3 py-2">₹{l.principalAmount}</td>
+                    <td className="px-3 py-2 text-slate-400">{l.loanType}</td>
+                    <td className="px-3 py-2 font-sans">{l.status}</td>
+                    <td className="px-3 py-2 text-right font-sans">
+                      <Link to={`/loans/${l.id}`} className="text-indigo-400 hover:underline">
+                        View →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Paginated Audit Logs */}
@@ -140,3 +246,4 @@ export const PersonDetailPage: React.FC = () => {
     </div>
   );
 };
+

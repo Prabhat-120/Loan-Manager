@@ -1,7 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { MainLayout } from '../components/layout/MainLayout';
 import { DashboardPage } from '../pages/DashboardPage';
-import { LoansPage } from '../pages/LoansPage';
 import { PaymentsPage } from '../pages/PaymentsPage';
 import { TenantsPage } from '../pages/TenantsPage';
 import { UsersPage } from '../pages/UsersPage';
@@ -23,6 +22,10 @@ import { TenantUsersPage } from '../pages/tenant/TenantUsersPage';
 
 import { PersonListPage } from '../pages/persons/PersonListPage';
 import { PersonDetailPage } from '../pages/persons/PersonDetailPage';
+import { LoanListPage } from '../pages/loans/LoanListPage';
+import { CreateLoanPage } from '../pages/loans/CreateLoanPage';
+import { LoanDetailPage } from '../pages/loans/LoanDetailPage';
+import { LoanSchedulePage } from '../pages/loans/LoanSchedulePage';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -64,7 +67,17 @@ export const router = createBrowserRouter([
           </RoleGuard>
         )
       },
-      { path: 'loans', element: <LoansPage /> },
+      { path: 'loans', element: <LoanListPage /> },
+      {
+        path: 'loans/new',
+        element: (
+          <RoleGuard allowedRoles={['TENANT_OWNER', 'TENANT_ADMIN', 'LOAN_OFFICER']}>
+            <CreateLoanPage />
+          </RoleGuard>
+        )
+      },
+      { path: 'loans/:loanId', element: <LoanDetailPage /> },
+      { path: 'loans/:loanId/schedule', element: <LoanSchedulePage /> },
       { path: 'payments', element: <PaymentsPage /> },
       { path: 'persons', element: <PersonListPage /> },
       { path: 'persons/:personId', element: <PersonDetailPage /> },
@@ -77,3 +90,4 @@ export const router = createBrowserRouter([
     ]
   }
 ]);
+

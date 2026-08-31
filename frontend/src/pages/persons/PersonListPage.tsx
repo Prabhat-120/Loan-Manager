@@ -26,9 +26,15 @@ export const PersonListPage: React.FC = () => {
 
   const isReadOnly = user?.role === 'READ_ONLY';
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error: queryError } = useQuery({
     queryKey: ['persons', search, statusFilter, page],
-    queryFn: () => personApi.listPersons({ search, status: statusFilter, page, limit: 10 })
+    queryFn: () =>
+      personApi.listPersons({
+        search: search || undefined,
+        status: statusFilter || undefined,
+        page,
+        limit: 10
+      })
   });
 
   const createMutation = useMutation({
@@ -39,7 +45,7 @@ export const PersonListPage: React.FC = () => {
       resetForm();
     },
     onError: (err: any) => {
-      setError(err.message || 'Failed to create person record');
+      setError(err?.response?.data?.error?.message || err.message || 'Failed to create person record');
     }
   });
 
@@ -132,6 +138,10 @@ export const PersonListPage: React.FC = () => {
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
         {isLoading ? (
           <div className="p-8 text-center text-slate-400">Loading directory...</div>
+        ) : queryError ? (
+          <div className="p-8 text-center text-rose-400">Failed to load people directory.</div>
+        ) : !data || data.persons.length === 0 ? (
+          <div className="p-8 text-center text-slate-500">No people found.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-300">
@@ -146,7 +156,7 @@ export const PersonListPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
-                {data?.persons.map((p) => (
+                {data.persons.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-800/40">
                     <td className="px-5 py-4 font-semibold text-white">
                       <Link to={`/persons/${p.id}`} className="hover:text-indigo-400 transition-colors">

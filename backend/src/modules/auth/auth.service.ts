@@ -52,7 +52,8 @@ export class AuthService {
       email: user.email,
       role: user.role,
       tenantId: user.tenantId ? user.tenantId.toString() : undefined,
-      status: user.status
+      status: user.status,
+      firstLogin: !!user.firstLogin
     };
 
     // First Login Flow: Issue restricted first-login token ONLY
