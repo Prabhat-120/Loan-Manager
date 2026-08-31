@@ -1,49 +1,32 @@
 import { Document, Types } from 'mongoose';
 
-export enum PaymentType {
-  EMI = 'EMI',
+export enum LoanType {
   INTEREST_ONLY = 'INTEREST_ONLY',
-  BULLET = 'BULLET',
-  CUSTOM = 'CUSTOM'
+  EMI = 'EMI',
+  FULL_PAYMENT = 'FULL_PAYMENT'
 }
 
-export enum InterestType {
-  SIMPLE = 'SIMPLE',
-  FLAT_RATE = 'FLAT_RATE',
-  REDUCING_BALANCE = 'REDUCING_BALANCE',
-  COMPOUND = 'COMPOUND'
+export enum InterestCalculationMethod {
+  FLAT = 'FLAT',
+  REDUCING_BALANCE = 'REDUCING_BALANCE'
 }
 
-export enum TermUnit {
-  DAYS = 'DAYS',
-  WEEKS = 'WEEKS',
-  MONTHS = 'MONTHS',
-  YEARS = 'YEARS'
+export enum InterestRateType {
+  PERCENTAGE_PER_YEAR = 'PERCENTAGE_PER_YEAR'
 }
 
-export enum RepaymentFrequency {
-  DAILY = 'DAILY',
-  WEEKLY = 'WEEKLY',
-  BIWEEKLY = 'BIWEEKLY',
+export enum PaymentFrequency {
   MONTHLY = 'MONTHLY',
   QUARTERLY = 'QUARTERLY',
   ANNUALLY = 'ANNUALLY'
 }
 
-export enum DayCountConvention {
-  ACTUAL_365 = 'ACTUAL_365',
-  ACTUAL_360 = 'ACTUAL_360',
-  THIRTY_360 = 'THIRTY_360'
-}
-
 export enum LoanStatus {
   DRAFT = 'DRAFT',
-  PENDING_APPROVAL = 'PENDING_APPROVAL',
-  APPROVED = 'APPROVED',
-  DISBURSED = 'DISBURSED',
   ACTIVE = 'ACTIVE',
-  PAID_OFF = 'PAID_OFF',
-  DEFAULTED = 'DEFAULTED',
+  PARTIALLY_PAID = 'PARTIALLY_PAID',
+  OVERDUE = 'OVERDUE',
+  CLOSED = 'CLOSED',
   CANCELLED = 'CANCELLED'
 }
 
@@ -51,25 +34,27 @@ export interface ILoan {
   _id?: Types.ObjectId;
   tenantId: Types.ObjectId;
   loanNumber: string;
-  borrowerId: Types.ObjectId;
-  lenderId: Types.ObjectId;
-  currency: string;
+  lenderPersonId: Types.ObjectId;
+  borrowerPersonId: Types.ObjectId;
+  loanType: LoanType;
   principalAmount: Types.Decimal128;
   interestRate: Types.Decimal128;
-  paymentType: PaymentType;
-  interestType: InterestType;
-  termValue: number;
-  termUnit: TermUnit;
-  repaymentFrequency: RepaymentFrequency;
-  dayCountConvention: DayCountConvention;
-  status: LoanStatus;
-  disbursedAt?: Date;
-  firstDueDate?: Date;
+  interestRateType: InterestRateType;
+  interestCalculationMethod: InterestCalculationMethod;
+  termMonths: number;
+  startDate: Date;
+  firstDueDate: Date;
   maturityDate?: Date;
-  totalPrincipalPaid: Types.Decimal128;
-  totalInterestPaid: Types.Decimal128;
-  outstandingBalance: Types.Decimal128;
-  createdById: Types.ObjectId;
+  paymentFrequency: PaymentFrequency;
+  status: LoanStatus;
+  totalInterest: Types.Decimal128;
+  totalPayable: Types.Decimal128;
+  totalPaid: Types.Decimal128;
+  outstandingPrincipal: Types.Decimal128;
+  outstandingInterest: Types.Decimal128;
+  notes?: string;
+  createdBy: Types.ObjectId;
+  updatedBy?: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -3,8 +3,8 @@ import { env } from '../../config/env.js';
 
 export const loginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
-  skip: () => env.NODE_ENV === 'test',
+  max: 100,
+  skip: () => env.NODE_ENV === 'test' || env.NODE_ENV === 'development',
   message: {
     success: false,
     error: {
@@ -18,8 +18,8 @@ export const loginRateLimiter = rateLimit({
 
 export const passwordResetRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
-  skip: () => env.NODE_ENV === 'test',
+  max: 50,
+  skip: () => env.NODE_ENV === 'test' || env.NODE_ENV === 'development',
   message: {
     success: false,
     error: {

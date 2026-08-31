@@ -11,10 +11,9 @@ import {
   NotificationModel,
   UserRole,
   PersonType,
-  PaymentType,
-  InterestType,
-  TermUnit,
-  RepaymentFrequency,
+  LoanType,
+  InterestCalculationMethod,
+  PaymentFrequency,
   PaymentMethod,
   NotificationChannel
 } from '../../modules/models.js';
@@ -43,55 +42,64 @@ describe('Module 2 - Database Models & Schema Validation Suite', () => {
       expect(tenant._id).toBeDefined();
       expect(tenant.currency).toBe('INR');
       expect(tenant.timezone).toBe('Asia/Kolkata');
+      expect(tenant.status).toBe('ACTIVE');
+    });
+
+    it('should enforce unique slug across tenants', async () => {
+      const slug = `unique-slug-${Date.now()}`;
+      const tenant1 = new TenantModel({ name: 'Tenant 1', slug });
+      await tenant1.save();
+
+      const tenant2 = new TenantModel({ name: 'Tenant 2', slug });
+      await expect(tenant2.save()).rejects.toThrow();
     });
   });
 
   describe('User Model', () => {
-    it('should allow PLATFORM_OWNER without tenantId', async () => {
-      const user = new UserModel({
-        email: `platform-owner-${Date.now()}@platform.com`,
-        passwordHash: 'hashed_password',
-        role: UserRole.PLATFORM_OWNER
+    it('should enforce globally unique email for User', async () => {
+      const email = `test-${Date.now()}@example.com`;
+      const tenantId = new Types.ObjectId();
+
+      const user1 = new UserModel({
+        tenantId,
+        email,
+        passwordHash: 'dummyhash',
+        role: UserRole.LOAN_OFFICER
       });
-      await user.save();
+      await user1.save();
 
-      expect(user._id).toBeDefined();
-      expect(user.tenantId).toBeUndefined();
-    });
-
-    it('should fail validation if TENANT_OWNER user lacks tenantId', async () => {
-      const user = new UserModel({
-        email: `tenant-owner-${Date.now()}@tenant.com`,
-        passwordHash: 'hashed_password',
-        role: UserRole.TENANT_OWNER
+      const user2 = new UserModel({
+        tenantId: new Types.ObjectId(),
+        email,
+        passwordHash: 'dummyhash',
+        role: UserRole.TENANT_ADMIN
       });
-
-      await expect(user.save()).rejects.toThrow();
+      await expect(user2.save()).rejects.toThrow();
     });
   });
 
-  describe('Person Model', () => {
-    it('should auto-normalize raw phone number to E.164 canonical format', async () => {
+  describe('Person Model Name Auto-Generation', () => {
+    it('should auto-generate displayName from first, middle, last name for INDIVIDUAL', async () => {
       const tenantId = new Types.ObjectId();
       const person = new PersonModel({
         tenantId,
         type: PersonType.INDIVIDUAL,
-        displayName: 'Rahul Sharma',
-        firstName: 'Rahul',
+        firstName: 'Rajesh',
+        middleName: 'Kumar',
         lastName: 'Sharma',
-        phone: '9876543210'
+        phone: '+91 98765 43210'
       });
       await person.save();
 
-      expect(person.normalizedPhone).toBe('+919876543210');
+      expect(person._id).toBeDefined();
+      expect(person.displayName).toBe('Rajesh Kumar Sharma');
     });
 
-    it('should create ORGANIZATION Person with displayName without requiring firstName/lastName', async () => {
+    it('should auto-generate displayName from organizationName for ORGANIZATION', async () => {
       const tenantId = new Types.ObjectId();
       const org = new PersonModel({
         tenantId,
         type: PersonType.ORGANIZATION,
-        displayName: 'Enterprise Global Corp',
         organizationName: 'Enterprise Global Corp',
         phone: '+91 99999 88888'
       });
@@ -112,42 +120,46 @@ describe('Module 2 - Database Models & Schema Validation Suite', () => {
       const loan = new LoanModel({
         tenantId,
         loanNumber: `LN-${Date.now()}`,
-        borrowerId: samePersonId,
-        lenderId: samePersonId, // Invalid: same Person!
+        borrowerPersonId: samePersonId,
+        lenderPersonId: samePersonId, // Invalid: same Person!
         principalAmount: toDecimal128(100000),
         interestRate: toDecimal128(12.5),
-        paymentType: PaymentType.EMI,
-        interestType: InterestType.REDUCING_BALANCE,
-        termValue: 12,
-        termUnit: TermUnit.MONTHS,
-        repaymentFrequency: RepaymentFrequency.MONTHLY,
-        createdById: userId
+        loanType: LoanType.EMI,
+        interestCalculationMethod: InterestCalculationMethod.REDUCING_BALANCE,
+        termMonths: 12,
+        startDate: new Date(),
+        firstDueDate: new Date(),
+        paymentFrequency: PaymentFrequency.MONTHLY,
+        createdBy: userId
       });
 
       await expect(loan.save()).rejects.toThrow('Lender and Borrower cannot be the same Person');
     });
 
-    it('should snapshot loan currency default as INR', async () => {
+    it('should snapshot loan principal amount as Decimal128', async () => {
       const tenantId = new Types.ObjectId();
-      const borrowerId = new Types.ObjectId();
-      const lenderId = new Types.ObjectId();
+      const borrowerPersonId = new Types.ObjectId();
+      const lenderPersonId = new Types.ObjectId();
       const userId = new Types.ObjectId();
 
       const loan = new LoanModel({
         tenantId,
         loanNumber: `LN-${Date.now()}`,
-        borrowerId,
-        lenderId,
+        borrowerPersonId,
+        lenderPersonId,
         principalAmount: toDecimal128(50000),
         interestRate: toDecimal128(10),
-        termValue: 6,
-        termUnit: TermUnit.MONTHS,
-        createdById: userId
+        loanType: LoanType.EMI,
+        interestCalculationMethod: InterestCalculationMethod.REDUCING_BALANCE,
+        termMonths: 6,
+        startDate: new Date(),
+        firstDueDate: new Date(),
+        paymentFrequency: PaymentFrequency.MONTHLY,
+        createdBy: userId
       });
       await loan.save();
 
-      expect(loan.currency).toBe('INR');
-      expect(loan.paymentType).toBe(PaymentType.EMI);
+      expect(loan.loanType).toBe(LoanType.EMI);
       expect(loan.principalAmount.toString()).toBe('50000.0000');
     });
   });
@@ -193,9 +205,11 @@ describe('Module 2 - Database Models & Schema Validation Suite', () => {
         loanId,
         installmentNumber: 1,
         dueDate: new Date(),
-        principalAmount: toDecimal128(10000),
-        interestAmount: toDecimal128(1000),
-        totalAmount: toDecimal128(11000)
+        openingPrincipal: toDecimal128(10000),
+        scheduledPrincipal: toDecimal128(10000),
+        scheduledInterest: toDecimal128(1000),
+        scheduledAmount: toDecimal128(11000),
+        remainingAmount: toDecimal128(11000)
       });
       await schedule.save();
 

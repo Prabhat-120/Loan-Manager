@@ -12,6 +12,7 @@ import { platformRouter } from './modules/tenants/platform.routes.js';
 import { tenantRouter } from './modules/tenants/tenant.routes.js';
 
 import { personRouter } from './modules/persons/person.routes.js';
+import { loanRouter } from './modules/loans/loan.routes.js';
 
 const app: Express = express();
 
@@ -58,9 +59,11 @@ apiV1Router.get('/health/ready', readyHandler);
 apiV1Router.use('/auth', authRouter);
 apiV1Router.use('/platform', platformRouter);
 apiV1Router.use('/tenant/persons', personRouter);
+apiV1Router.use('/tenant/loans', loanRouter);
 apiV1Router.use('/tenant', tenantRouter);
 
 app.use('/api/v1', apiV1Router);
+
 
 // 404 Route Handler
 app.use('*', (_req: Request, _res: Response, next) => {

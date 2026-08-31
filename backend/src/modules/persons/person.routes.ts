@@ -17,9 +17,15 @@ router.get('/', requireRoles(UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN, UserR
 router.post('/lookup-or-create', requireRoles(UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN, UserRole.LOAN_OFFICER), PersonController.lookupOrCreatePerson);
 router.post('/', requireRoles(UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN, UserRole.LOAN_OFFICER), PersonController.createPerson);
 
+import { LoanController } from '../loans/loan.controller.js';
+
 // Single Person Detail & Audit Logs
 router.get('/:personId', requireRoles(UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN, UserRole.LOAN_OFFICER, UserRole.READ_ONLY), PersonController.getPersonById);
 router.get('/:personId/audit-logs', requireRoles(UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN, UserRole.LOAN_OFFICER, UserRole.READ_ONLY), PersonController.getPersonAuditLogs);
+
+// Person Loan Relationships (Loans Given / Loans Taken)
+router.get('/:personId/loans-given', requireRoles(UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN, UserRole.LOAN_OFFICER, UserRole.READ_ONLY), LoanController.getLoansGivenByPerson);
+router.get('/:personId/loans-taken', requireRoles(UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN, UserRole.LOAN_OFFICER, UserRole.READ_ONLY), LoanController.getLoansTakenByPerson);
 
 // Update Person (TENANT_OWNER, TENANT_ADMIN, LOAN_OFFICER)
 router.patch('/:personId', requireRoles(UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN, UserRole.LOAN_OFFICER), PersonController.updatePerson);
@@ -32,3 +38,4 @@ router.post('/:personId/link-user', requireRoles(UserRole.TENANT_OWNER, UserRole
 router.post('/:personId/unlink-user', requireRoles(UserRole.TENANT_OWNER), PersonController.unlinkPersonFromUser);
 
 export const personRouter = router;
+
