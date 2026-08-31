@@ -294,4 +294,34 @@ describe('Module 4 Tenant Management & Platform Owner Tests', () => {
     expect(res.body.data.metrics.totalTenants).toBeGreaterThanOrEqual(1);
     expect(res.body.data.metrics.activeTenants).toBeGreaterThanOrEqual(1);
   });
+
+  it('9. Transactional Rollback Verification: rolls back Tenant and Subscription if user creation fails', async () => {
+    // Pre-create duplicate email in database
+    await UserModel.create({
+      tenantId: testTenantId,
+      email: 'existingowner@test.com',
+      passwordHash: await bcrypt.hash('Secret123456!', 10),
+      role: UserRole.LOAN_OFFICER,
+      status: UserStatus.ACTIVE,
+      firstLogin: false
+    });
+
+    // Attempt onboarding with duplicate email
+    await expect(
+      TenantService.onboardTenant({
+        name: 'Rollback Test Tenant',
+        contactEmail: 'contact@rollback.com',
+        contactPhone: '+919876543299',
+        ownerEmail: 'existingowner@test.com'
+      })
+    ).rejects.toThrow();
+
+    // Verify 0 orphaned records remain in MongoDB
+    const tenant = await TenantModel.findOne({ name: 'Rollback Test Tenant' });
+    expect(tenant).toBeNull();
+
+    const subCount = await SubscriptionModel.countDocuments({ tenantId: { $exists: true } });
+    const initialTenantSubs = await SubscriptionModel.countDocuments({ tenantId: testTenantId });
+    expect(subCount).toBe(initialTenantSubs);
+  });
 });

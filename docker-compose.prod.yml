@@ -5,15 +5,16 @@ services:
     image: mongo:7.0
     container_name: loan_mongodb_prod
     restart: always
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     environment:
       MONGO_INITDB_DATABASE: loan-manager
     volumes:
       - mongodb_prod_data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
+      test: ["CMD", "mongosh", "--eval", "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}).ok }"]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   backend:
     build:
@@ -26,7 +27,7 @@ services:
     environment:
       PORT: 5000
       NODE_ENV: production
-      MONGO_URI: mongodb://mongodb:27017/loan-manager
+      MONGO_URI: mongodb://mongodb:27017/loan-manager?replicaSet=rs0
       CORS_ORIGIN: http://localhost:8080
     depends_on:
       mongodb:
