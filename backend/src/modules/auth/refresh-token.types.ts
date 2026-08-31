@@ -4,9 +4,10 @@ export interface IRefreshToken {
   _id?: Types.ObjectId;
   tenantId?: Types.ObjectId;
   userId: Types.ObjectId;
-  token: string;
+  tokenHash: string;
   expiresAt: Date;
-  isRevoked: boolean;
+  revokedAt?: Date;
+  replacedByTokenId?: Types.ObjectId;
   deviceInfo?: string;
   createdAt?: Date;
 }

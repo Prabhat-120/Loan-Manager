@@ -23,6 +23,11 @@ export interface IUser {
   passwordHash: string;
   role: UserRole;
   status: UserStatus;
+  firstLogin?: boolean;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
+  failedLoginAttempts?: number;
+  lockUntil?: Date;
   lastLoginAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;

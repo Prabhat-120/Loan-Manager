@@ -1,8 +1,5 @@
-import { ModuleMetadata } from '../types.js';
-
-export const authModuleMetadata: ModuleMetadata = {
-  name: 'auth',
-  description: 'Authentication and Authorization Module (Planned for feature/authentication)',
-  version: '1.0.0',
-  status: 'planned'
-};
+export * from './auth.routes.js';
+export * from './auth.service.js';
+export * from './auth.controller.js';
+export * from './refresh-token.model.js';
+export * from './refresh-token.types.js';

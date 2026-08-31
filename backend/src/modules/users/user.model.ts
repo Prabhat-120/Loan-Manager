@@ -15,6 +15,11 @@ const userSchema = new Schema<IUser>(
     passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: Object.values(UserRole), default: UserRole.LOAN_OFFICER },
     status: { type: String, enum: Object.values(UserStatus), default: UserStatus.ACTIVE },
+    firstLogin: { type: Boolean, default: true },
+    passwordResetToken: { type: String, select: false },
+    passwordResetExpires: { type: Date },
+    failedLoginAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date },
     lastLoginAt: { type: Date }
   },
   {

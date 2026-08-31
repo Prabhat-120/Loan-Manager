@@ -7,6 +7,7 @@ import { isDatabaseReady } from './config/database.js';
 import { logger } from './common/logger/index.js';
 import { errorHandler } from './common/middleware/error-handler.js';
 import { NotFoundError } from './common/errors/app-error.js';
+import { authRouter } from './modules/auth/auth.routes.js';
 
 const app: Express = express();
 
@@ -50,6 +51,7 @@ app.get('/health/ready', readyHandler);
 const apiV1Router = express.Router();
 apiV1Router.get('/health', healthHandler);
 apiV1Router.get('/health/ready', readyHandler);
+apiV1Router.use('/auth', authRouter);
 
 app.use('/api/v1', apiV1Router);
 
