@@ -56,15 +56,24 @@ export interface PersonDTO {
   type: string;
   displayName: string;
   firstName?: string;
+  middleName?: string;
   lastName?: string;
   organizationName?: string;
   email?: string;
   phone: string;
   normalizedPhone: string;
+  alternatePhone?: string;
   idType?: string;
   idNumber?: string;
   address?: Record<string, string>;
+  dateOfBirth?: Date;
+  occupation?: string;
+  notes?: string;
+  status: string;
+  hasUserAccount: boolean;
+  linkedUserEmail?: string;
   createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export const formatUserDTO = (user: any): UserDTO => {
@@ -119,22 +128,31 @@ export const formatSubscriptionDTO = (sub: any): SubscriptionDTO => {
   };
 };
 
-export const formatPersonDTO = (person: any): PersonDTO => {
+export const formatPersonDTO = (person: any, linkedUserEmail?: string): PersonDTO => {
   return {
     id: person._id ? person._id.toString() : person.id,
     tenantId: person.tenantId ? person.tenantId.toString() : person.tenantId,
     userId: person.userId ? person.userId.toString() : undefined,
-    type: person.type,
+    type: person.type || 'INDIVIDUAL',
     displayName: person.displayName,
     firstName: person.firstName,
+    middleName: person.middleName,
     lastName: person.lastName,
     organizationName: person.organizationName,
     email: person.email,
     phone: person.phone,
     normalizedPhone: person.normalizedPhone,
+    alternatePhone: person.alternatePhone,
     idType: person.idType,
     idNumber: person.idNumber,
     address: person.address,
-    createdAt: person.createdAt
+    dateOfBirth: person.dateOfBirth,
+    occupation: person.occupation,
+    notes: person.notes,
+    status: person.status || 'ACTIVE',
+    hasUserAccount: !!(person.userId || person.linkedUserEmail || linkedUserEmail),
+    linkedUserEmail: linkedUserEmail || person.linkedUserEmail,
+    createdAt: person.createdAt,
+    updatedAt: person.updatedAt
   };
 };

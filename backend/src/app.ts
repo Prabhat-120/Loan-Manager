@@ -11,6 +11,8 @@ import { authRouter } from './modules/auth/auth.routes.js';
 import { platformRouter } from './modules/tenants/platform.routes.js';
 import { tenantRouter } from './modules/tenants/tenant.routes.js';
 
+import { personRouter } from './modules/persons/person.routes.js';
+
 const app: Express = express();
 
 // Global Middlewares
@@ -55,6 +57,7 @@ apiV1Router.get('/health', healthHandler);
 apiV1Router.get('/health/ready', readyHandler);
 apiV1Router.use('/auth', authRouter);
 apiV1Router.use('/platform', platformRouter);
+apiV1Router.use('/tenant/persons', personRouter);
 apiV1Router.use('/tenant', tenantRouter);
 
 app.use('/api/v1', apiV1Router);
