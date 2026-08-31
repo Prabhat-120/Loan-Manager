@@ -16,6 +16,11 @@ import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import { UnauthorizedPage } from '../pages/auth/UnauthorizedPage';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
+import { RoleGuard } from '../components/auth/RoleGuard';
+import { PlatformDashboardPage } from '../pages/platform/PlatformDashboardPage';
+import { TenantListPage } from '../pages/platform/TenantListPage';
+import { TenantDashboardPage } from '../pages/tenant/TenantDashboardPage';
+import { TenantUsersPage } from '../pages/tenant/TenantUsersPage';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -32,6 +37,31 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardPage /> },
+      {
+        path: 'platform/dashboard',
+        element: (
+          <RoleGuard allowedRoles={['PLATFORM_OWNER']}>
+            <PlatformDashboardPage />
+          </RoleGuard>
+        )
+      },
+      {
+        path: 'platform/tenants',
+        element: (
+          <RoleGuard allowedRoles={['PLATFORM_OWNER']}>
+            <TenantListPage />
+          </RoleGuard>
+        )
+      },
+      { path: 'tenant/dashboard', element: <TenantDashboardPage /> },
+      {
+        path: 'tenant/users',
+        element: (
+          <RoleGuard allowedRoles={['TENANT_OWNER', 'TENANT_ADMIN']}>
+            <TenantUsersPage />
+          </RoleGuard>
+        )
+      },
       { path: 'loans', element: <LoansPage /> },
       { path: 'payments', element: <PaymentsPage /> },
       { path: 'persons', element: <PersonsPage /> },

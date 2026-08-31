@@ -8,6 +8,8 @@ import { logger } from './common/logger/index.js';
 import { errorHandler } from './common/middleware/error-handler.js';
 import { NotFoundError } from './common/errors/app-error.js';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { platformRouter } from './modules/tenants/platform.routes.js';
+import { tenantRouter } from './modules/tenants/tenant.routes.js';
 
 const app: Express = express();
 
@@ -52,6 +54,8 @@ const apiV1Router = express.Router();
 apiV1Router.get('/health', healthHandler);
 apiV1Router.get('/health/ready', readyHandler);
 apiV1Router.use('/auth', authRouter);
+apiV1Router.use('/platform', platformRouter);
+apiV1Router.use('/tenant', tenantRouter);
 
 app.use('/api/v1', apiV1Router);
 

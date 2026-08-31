@@ -3,7 +3,15 @@ import { Document, Types } from 'mongoose';
 export enum TenantStatus {
   ACTIVE = 'ACTIVE',
   SUSPENDED = 'SUSPENDED',
-  CANCELLED = 'CANCELLED'
+  INACTIVE = 'INACTIVE'
+}
+
+export interface ITenantAddress {
+  street?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
 }
 
 export interface ITenantSettings {
@@ -20,6 +28,10 @@ export interface ITenant {
   status: TenantStatus;
   currency: string;
   timezone: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  address?: ITenantAddress;
+  country?: string;
   settings?: ITenantSettings;
   createdAt?: Date;
   updatedAt?: Date;

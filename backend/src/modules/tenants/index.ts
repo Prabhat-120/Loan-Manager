@@ -1,8 +1,8 @@
-import { ModuleMetadata } from '../types.js';
-
-export const tenantsModuleMetadata: ModuleMetadata = {
-  name: 'tenants',
-  description: 'Multi-tenant Organization Management Module',
-  version: '1.0.0',
-  status: 'planned'
-};
+export * from './tenant.types.js';
+export * from './tenant.model.js';
+export * from './subscription.types.js';
+export * from './subscription.model.js';
+export * from './tenant.service.js';
+export * from './subscription.service.js';
+export * from './platform.routes.js';
+export * from './tenant.routes.js';

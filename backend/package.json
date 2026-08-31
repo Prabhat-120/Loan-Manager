@@ -9,7 +9,7 @@
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --run"
+    "test": "vitest run --run --fileParallelism=false"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
