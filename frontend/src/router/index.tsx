@@ -3,7 +3,6 @@ import { MainLayout } from '../components/layout/MainLayout';
 import { DashboardPage } from '../pages/DashboardPage';
 import { LoansPage } from '../pages/LoansPage';
 import { PaymentsPage } from '../pages/PaymentsPage';
-import { PersonsPage } from '../pages/PersonsPage';
 import { TenantsPage } from '../pages/TenantsPage';
 import { UsersPage } from '../pages/UsersPage';
 import { ReportsPage } from '../pages/ReportsPage';
@@ -21,6 +20,9 @@ import { PlatformDashboardPage } from '../pages/platform/PlatformDashboardPage';
 import { TenantListPage } from '../pages/platform/TenantListPage';
 import { TenantDashboardPage } from '../pages/tenant/TenantDashboardPage';
 import { TenantUsersPage } from '../pages/tenant/TenantUsersPage';
+
+import { PersonListPage } from '../pages/persons/PersonListPage';
+import { PersonDetailPage } from '../pages/persons/PersonDetailPage';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -64,7 +66,8 @@ export const router = createBrowserRouter([
       },
       { path: 'loans', element: <LoansPage /> },
       { path: 'payments', element: <PaymentsPage /> },
-      { path: 'persons', element: <PersonsPage /> },
+      { path: 'persons', element: <PersonListPage /> },
+      { path: 'persons/:personId', element: <PersonDetailPage /> },
       { path: 'tenants', element: <TenantsPage /> },
       { path: 'users', element: <UsersPage /> },
       { path: 'reports', element: <ReportsPage /> },
