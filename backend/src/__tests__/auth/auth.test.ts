@@ -181,29 +181,59 @@ describe('Module 3 Authentication & Authorization Tests', () => {
       firstLogin: false
     });
 
-    // 5 failed login attempts
-    for (let i = 0; i < 5; i++) {
-      await request(app)
-        .post('/api/v1/auth/login')
-        .send({ email: 'lockout@acme.com', password: 'WrongPassword123!' });
-    }
+    // 1. Initial failedLoginAttempts = 0
+    let checkUser = await UserModel.findById(user._id);
+    expect(checkUser?.failedLoginAttempts).toBe(0);
+    expect(checkUser?.lockUntil).toBeFalsy();
 
+    // 2. Failed attempt #1 -> failedLoginAttempts = 1
+    await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: 'lockout@acme.com', password: 'WrongPassword123!' });
+    checkUser = await UserModel.findById(user._id);
+    expect(checkUser?.failedLoginAttempts).toBe(1);
+
+    // 3. Failed attempt #2 -> failedLoginAttempts = 2
+    await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: 'lockout@acme.com', password: 'WrongPassword123!' });
+    checkUser = await UserModel.findById(user._id);
+    expect(checkUser?.failedLoginAttempts).toBe(2);
+
+    // 4. Failed attempt #3 -> failedLoginAttempts = 3
+    await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: 'lockout@acme.com', password: 'WrongPassword123!' });
+    checkUser = await UserModel.findById(user._id);
+    expect(checkUser?.failedLoginAttempts).toBe(3);
+
+    // 5. Failed attempt #4 -> failedLoginAttempts = 4
+    await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: 'lockout@acme.com', password: 'WrongPassword123!' });
+    checkUser = await UserModel.findById(user._id);
+    expect(checkUser?.failedLoginAttempts).toBe(4);
+
+    // 6. Failed attempt #5 -> failedLoginAttempts = 5 and lockUntil exists
+    await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: 'lockout@acme.com', password: 'WrongPassword123!' });
     const lockedUser = await UserModel.findById(user._id);
     expect(lockedUser?.failedLoginAttempts).toBe(5);
     expect(lockedUser?.lockUntil).toBeDefined();
+    expect(lockedUser?.lockUntil).not.toBeNull();
 
-    // Subsequent attempt fails due to lockout
+    // 7. Subsequent login while locked is rejected
     const lockedRes = await request(app)
       .post('/api/v1/auth/login')
       .send({ email: 'lockout@acme.com', password: normalPassword });
     expect(lockedRes.status).toBe(401);
     expect(lockedRes.body.error.message).toContain('account is locked');
 
-    // Simulate lockout expiration
+    // 8. After lock expiry, successful login resets counter to 0 and lockUntil to null
     lockedUser!.lockUntil = new Date(Date.now() - 1000);
     await lockedUser!.save();
 
-    // Successful login resets counters
     const successRes = await request(app)
       .post('/api/v1/auth/login')
       .send({ email: 'lockout@acme.com', password: normalPassword });
@@ -211,7 +241,7 @@ describe('Module 3 Authentication & Authorization Tests', () => {
 
     const unlockedUser = await UserModel.findById(user._id);
     expect(unlockedUser?.failedLoginAttempts).toBe(0);
-    expect(unlockedUser?.lockUntil).toBeUndefined();
+    expect(unlockedUser?.lockUntil).toBeNull();
   });
 
   it('6. Logout: revokes specified refresh token', async () => {

@@ -27,7 +27,7 @@ export interface IUser {
   passwordResetToken?: string;
   passwordResetExpires?: Date;
   failedLoginAttempts?: number;
-  lockUntil?: Date;
+  lockUntil?: Date | null;
   lastLoginAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;

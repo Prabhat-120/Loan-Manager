@@ -43,7 +43,7 @@ export class AuthService {
 
     // Reset lockout counters on successful authentication
     user.failedLoginAttempts = 0;
-    user.lockUntil = undefined;
+    user.lockUntil = null;
     user.lastLoginAt = new Date();
     await user.save();
 

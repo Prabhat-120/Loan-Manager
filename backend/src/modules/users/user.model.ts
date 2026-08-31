@@ -19,7 +19,7 @@ const userSchema = new Schema<IUser>(
     passwordResetToken: { type: String, select: false },
     passwordResetExpires: { type: Date },
     failedLoginAttempts: { type: Number, default: 0 },
-    lockUntil: { type: Date },
+    lockUntil: { type: Date, default: null },
     lastLoginAt: { type: Date }
   },
   {
