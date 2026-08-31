@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { loanApi } from '../../api/loan-api';
+import { paymentApi } from '../../api/payment-api';
 import { useAuth } from '../../context/AuthContext';
 
 export const LoanDetailPage: React.FC = () => {
@@ -16,6 +17,12 @@ export const LoanDetailPage: React.FC = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['loanDetail', loanId],
     queryFn: () => loanApi.getLoanById(loanId!),
+    enabled: !!loanId
+  });
+
+  const { data: paymentsData } = useQuery({
+    queryKey: ['loanPayments', loanId],
+    queryFn: () => paymentApi.getLoanPaymentHistory(loanId!),
     enabled: !!loanId
   });
 
@@ -80,6 +87,9 @@ export const LoanDetailPage: React.FC = () => {
     }
   };
 
+  const isPayable =
+    loan.status === 'ACTIVE' || loan.status === 'PARTIALLY_PAID' || loan.status === 'OVERDUE';
+
   return (
     <div className="space-y-6">
       {/* Header & Actions */}
@@ -105,6 +115,15 @@ export const LoanDetailPage: React.FC = () => {
 
         {/* Action Controls */}
         <div className="flex flex-wrap gap-2">
+          {!isReadOnly && isPayable && (
+            <Link
+              to={`/payments/new?loanId=${loan.id}`}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-1.5"
+            >
+              <span>+</span> Record Payment
+            </Link>
+          )}
+
           <Link
             to={`/loans/${loan.id}/schedule`}
             className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-xl border border-slate-700 transition-all"
@@ -249,6 +268,85 @@ export const LoanDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Payments History Ledger Section */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <span>💳</span> Payment History
+            </h2>
+            <p className="text-xs text-slate-400">
+              {paymentsData?.totalPayments || 0} payment records recorded for this loan
+            </p>
+          </div>
+          {!isReadOnly && isPayable && (
+            <Link
+              to={`/payments/new?loanId=${loan.id}`}
+              className="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 font-semibold text-xs rounded-xl transition-all"
+            >
+              + Post New Payment
+            </Link>
+          )}
+        </div>
+
+        {!paymentsData || paymentsData.payments.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-500">
+            No payments have been recorded for this loan yet.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="uppercase bg-slate-950 text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th className="px-3 py-2">Payment #</th>
+                  <th className="px-3 py-2">Date</th>
+                  <th className="px-3 py-2">Method</th>
+                  <th className="px-3 py-2">Amount</th>
+                  <th className="px-3 py-2">Interest</th>
+                  <th className="px-3 py-2">Principal</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800 font-mono">
+                {paymentsData.payments.map((pmt) => (
+                  <tr key={pmt.id} className="hover:bg-slate-800/40">
+                    <td className="px-3 py-2 text-indigo-400 font-bold">{pmt.paymentNumber}</td>
+                    <td className="px-3 py-2 text-slate-300">{new Date(pmt.paymentDate).toLocaleDateString()}</td>
+                    <td className="px-3 py-2 font-sans text-slate-400">{pmt.paymentMethod}</td>
+                    <td className="px-3 py-2 text-white font-semibold">
+                      ₹{parseFloat(pmt.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="px-3 py-2 text-amber-400">
+                      ₹{parseFloat(pmt.allocatedInterest).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="px-3 py-2 text-emerald-400">
+                      ₹{parseFloat(pmt.allocatedPrincipal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="px-3 py-2 font-sans">
+                      <span
+                        className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border ${
+                          pmt.status === 'POSTED'
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                        }`}
+                      >
+                        {pmt.status}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-right font-sans">
+                      <Link to={`/payments/${pmt.id}`} className="text-indigo-400 hover:underline">
+                        View Details →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Dates & Timeline */}

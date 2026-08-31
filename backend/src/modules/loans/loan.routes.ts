@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { LoanController } from './loan.controller.js';
+import { PaymentController } from '../payments/payment.controller.js';
 import { authenticate } from '../../common/middleware/authenticate.js';
 import { requireRoles, requireTenantScope } from '../../common/middleware/authorize.js';
 import { UserRole } from '../users/user.types.js';
@@ -86,4 +87,17 @@ router.post(
   LoanController.cancelLoan
 );
 
+// Get Payment History for a loan (All roles)
+router.get(
+  '/:loanId/payments',
+  requireRoles(
+    UserRole.TENANT_OWNER,
+    UserRole.TENANT_ADMIN,
+    UserRole.LOAN_OFFICER,
+    UserRole.READ_ONLY
+  ),
+  PaymentController.getLoanHistory
+);
+
 export const loanRouter = router;
+

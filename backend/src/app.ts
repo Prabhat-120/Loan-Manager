@@ -13,6 +13,7 @@ import { tenantRouter } from './modules/tenants/tenant.routes.js';
 
 import { personRouter } from './modules/persons/person.routes.js';
 import { loanRouter } from './modules/loans/loan.routes.js';
+import { paymentRouter } from './modules/payments/payment.routes.js';
 
 const app: Express = express();
 
@@ -60,6 +61,7 @@ apiV1Router.use('/auth', authRouter);
 apiV1Router.use('/platform', platformRouter);
 apiV1Router.use('/tenant/persons', personRouter);
 apiV1Router.use('/tenant/loans', loanRouter);
+apiV1Router.use('/tenant/payments', paymentRouter);
 apiV1Router.use('/tenant', tenantRouter);
 
 app.use('/api/v1', apiV1Router);

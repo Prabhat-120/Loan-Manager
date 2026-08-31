@@ -334,3 +334,155 @@ export const formatLoanDetailDTO = (
   };
 };
 
+export interface RepaymentScheduleAllocationDTO {
+  id: string;
+  tenantId: string;
+  paymentId: string;
+  loanId: string;
+  scheduleId: string;
+  installmentNumber: number;
+  dueDate?: Date;
+  interestAmount: string;
+  principalAmount: string;
+  totalAmount: string;
+  createdAt?: Date;
+}
+
+export interface PaymentDTO {
+  id: string;
+  tenantId: string;
+  paymentNumber: string;
+  loanId: string;
+  loanNumber?: string;
+  borrowerPersonId: string;
+  borrowerName?: string;
+  amount: string;
+  paymentDate: Date;
+  paymentMethod: string;
+  referenceNumber?: string;
+  notes?: string;
+  status: string;
+  allocatedInterest: string;
+  allocatedPrincipal: string;
+  unallocatedAmount: string;
+  createdBy: string;
+  reversedBy?: string;
+  reversedAt?: Date;
+  reversalReason?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface PaymentAllocationSummaryDTO {
+  allocatedInterest: string;
+  allocatedPrincipal: string;
+  unallocatedAmount: string;
+  totalAmount: string;
+}
+
+export interface PaymentDetailDTO {
+  payment: PaymentDTO;
+  loan: LoanDTO;
+  borrower: PersonDTO;
+  allocationSummary: PaymentAllocationSummaryDTO;
+  scheduleAllocations: RepaymentScheduleAllocationDTO[];
+}
+
+export interface LoanPaymentHistoryDTO {
+  payments: PaymentDTO[];
+  totalPayments: number;
+  totalPaid: string;
+  totalInterestPaid: string;
+  totalPrincipalPaid: string;
+  outstandingPrincipal: string;
+  outstandingInterest: string;
+  outstandingTotal: string;
+}
+
+export const formatPaymentScheduleAllocationDTO = (
+  allocation: any,
+  dueDate?: Date
+): RepaymentScheduleAllocationDTO => {
+  return {
+    id: allocation._id ? allocation._id.toString() : allocation.id,
+    tenantId: allocation.tenantId ? allocation.tenantId.toString() : allocation.tenantId,
+    paymentId: allocation.paymentId ? allocation.paymentId.toString() : allocation.paymentId,
+    loanId: allocation.loanId ? allocation.loanId.toString() : allocation.loanId,
+    scheduleId: allocation.scheduleId ? allocation.scheduleId.toString() : allocation.scheduleId,
+    installmentNumber: allocation.installmentNumber,
+    dueDate: dueDate || allocation.dueDate,
+    interestAmount: to2Dec(allocation.interestAmount),
+    principalAmount: to2Dec(allocation.principalAmount),
+    totalAmount: to2Dec(allocation.totalAmount),
+    createdAt: allocation.createdAt
+  };
+};
+
+export const formatPaymentDTO = (
+  payment: any,
+  loanNumber?: string,
+  borrowerName?: string
+): PaymentDTO => {
+  const amount = to2Dec(payment.amount);
+  const allocatedInterest = to2Dec(payment.allocatedInterest);
+  const allocatedPrincipal = to2Dec(payment.allocatedPrincipal);
+  const unallocatedAmount = to2Dec(payment.unallocatedAmount);
+
+  return {
+    id: payment._id ? payment._id.toString() : payment.id,
+    tenantId: payment.tenantId ? payment.tenantId.toString() : payment.tenantId,
+    paymentNumber: payment.paymentNumber,
+    loanId: payment.loanId ? (payment.loanId._id ? payment.loanId._id.toString() : payment.loanId.toString()) : '',
+    loanNumber: loanNumber || (payment.loanId && payment.loanId.loanNumber ? payment.loanId.loanNumber : undefined),
+    borrowerPersonId: payment.borrowerPersonId
+      ? (payment.borrowerPersonId._id ? payment.borrowerPersonId._id.toString() : payment.borrowerPersonId.toString())
+      : '',
+    borrowerName:
+      borrowerName ||
+      (payment.borrowerPersonId && payment.borrowerPersonId.displayName
+        ? payment.borrowerPersonId.displayName
+        : undefined),
+    amount,
+    paymentDate: payment.paymentDate,
+    paymentMethod: payment.paymentMethod,
+    referenceNumber: payment.referenceNumber,
+    notes: payment.notes,
+    status: payment.status,
+    allocatedInterest,
+    allocatedPrincipal,
+    unallocatedAmount,
+    createdBy: payment.createdBy ? (payment.createdBy._id ? payment.createdBy._id.toString() : payment.createdBy.toString()) : '',
+    reversedBy: payment.reversedBy ? (payment.reversedBy._id ? payment.reversedBy._id.toString() : payment.reversedBy.toString()) : undefined,
+    reversedAt: payment.reversedAt,
+    reversalReason: payment.reversalReason,
+    createdAt: payment.createdAt,
+    updatedAt: payment.updatedAt
+  };
+};
+
+export const formatPaymentDetailDTO = (
+  payment: any,
+  loan: any,
+  lender: any,
+  borrower: any,
+  scheduleAllocations: any[] = []
+): PaymentDetailDTO => {
+  const loanDTO = formatLoanDTO(loan, lender, borrower);
+  const borrowerDTO = formatPersonDTO(borrower);
+  const paymentDTO = formatPaymentDTO(payment, loanDTO.loanNumber, borrowerDTO.displayName);
+
+  return {
+    payment: paymentDTO,
+    loan: loanDTO,
+    borrower: borrowerDTO,
+    allocationSummary: {
+      allocatedInterest: paymentDTO.allocatedInterest,
+      allocatedPrincipal: paymentDTO.allocatedPrincipal,
+      unallocatedAmount: paymentDTO.unallocatedAmount,
+      totalAmount: paymentDTO.amount
+    },
+    scheduleAllocations: scheduleAllocations.map((sa) => formatPaymentScheduleAllocationDTO(sa))
+  };
+};
+
+

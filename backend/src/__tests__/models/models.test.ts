@@ -22,6 +22,8 @@ import { toDecimal128 } from '../../common/utils/money.js';
 describe('Module 2 - Database Models & Schema Validation Suite', () => {
   beforeAll(async () => {
     await mongoose.connect(env.MONGO_URI);
+    await TenantModel.init();
+    await UserModel.init();
   });
 
   afterAll(async () => {
@@ -198,6 +200,7 @@ describe('Module 2 - Database Models & Schema Validation Suite', () => {
     it('should support multiple Payments allocated to a single RepaymentSchedule', async () => {
       const tenantId = new Types.ObjectId();
       const loanId = new Types.ObjectId();
+      const borrowerPersonId = new Types.ObjectId();
       const userId = new Types.ObjectId();
 
       const schedule = new RepaymentScheduleModel({
@@ -216,31 +219,33 @@ describe('Module 2 - Database Models & Schema Validation Suite', () => {
       const payment1 = new PaymentModel({
         tenantId,
         loanId,
-        scheduleId: schedule._id,
+        borrowerPersonId,
         paymentNumber: `PMT-1-${Date.now()}`,
         amount: toDecimal128(5000),
-        principalComponent: toDecimal128(4500),
-        interestComponent: toDecimal128(500),
+        allocatedPrincipal: toDecimal128(4500),
+        allocatedInterest: toDecimal128(500),
         paymentMethod: PaymentMethod.UPI,
-        recordedById: userId
+        createdBy: userId
       });
       await payment1.save();
 
       const payment2 = new PaymentModel({
         tenantId,
         loanId,
-        scheduleId: schedule._id,
+        borrowerPersonId,
         paymentNumber: `PMT-2-${Date.now()}`,
         amount: toDecimal128(6000),
-        principalComponent: toDecimal128(5500),
-        interestComponent: toDecimal128(500),
+        allocatedPrincipal: toDecimal128(5500),
+        allocatedInterest: toDecimal128(500),
         paymentMethod: PaymentMethod.CASH,
-        recordedById: userId
+        createdBy: userId
       });
       await payment2.save();
 
-      expect(payment1.scheduleId?.toString()).toBe(schedule._id?.toString());
-      expect(payment2.scheduleId?.toString()).toBe(schedule._id?.toString());
+      expect(payment1._id).toBeDefined();
+      expect(payment2._id).toBeDefined();
+      expect(payment1.loanId.toString()).toBe(loanId.toString());
+      expect(payment2.loanId.toString()).toBe(loanId.toString());
     });
   });
 });

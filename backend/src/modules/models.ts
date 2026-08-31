@@ -11,10 +11,17 @@ export * from './persons/person.model.js';
 
 export * from './loans/loan.types.js';
 export * from './loans/loan.model.js';
+export * from './loans/repayment-schedule.types.js';
 export * from './loans/repayment-schedule.model.js';
+export * from './loans/loan-counter.model.js';
 
 export * from './payments/payment.types.js';
 export * from './payments/payment.model.js';
+export * from './payments/payment-counter.model.js';
+export * from './payments/payment-schedule-allocation.types.js';
+export * from './payments/payment-schedule-allocation.model.js';
+export * from './payments/idempotency.types.js';
+export * from './payments/idempotency.model.js';
 
 export * from './audit/audit-log.types.js';
 export * from './audit/audit-log.model.js';

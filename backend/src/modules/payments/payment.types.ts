@@ -5,33 +5,33 @@ export enum PaymentMethod {
   BANK_TRANSFER = 'BANK_TRANSFER',
   UPI = 'UPI',
   CHEQUE = 'CHEQUE',
-  CARD = 'CARD',
   OTHER = 'OTHER'
 }
 
 export enum PaymentStatus {
-  PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-  REFUNDED = 'REFUNDED'
+  POSTED = 'POSTED',
+  REVERSED = 'REVERSED'
 }
 
 export interface IPayment {
   _id?: Types.ObjectId;
   tenantId: Types.ObjectId;
-  loanId: Types.ObjectId;
-  scheduleId?: Types.ObjectId;
   paymentNumber: string;
+  loanId: Types.ObjectId;
+  borrowerPersonId: Types.ObjectId;
   amount: Types.Decimal128;
-  principalComponent: Types.Decimal128;
-  interestComponent: Types.Decimal128;
-  penaltyComponent: Types.Decimal128;
   paymentDate: Date;
   paymentMethod: PaymentMethod;
   referenceNumber?: string;
-  status: PaymentStatus;
   notes?: string;
-  recordedById: Types.ObjectId;
+  status: PaymentStatus;
+  allocatedInterest: Types.Decimal128;
+  allocatedPrincipal: Types.Decimal128;
+  unallocatedAmount: Types.Decimal128;
+  createdBy: Types.ObjectId;
+  reversedBy?: Types.ObjectId;
+  reversedAt?: Date;
+  reversalReason?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

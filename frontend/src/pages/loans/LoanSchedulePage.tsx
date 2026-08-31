@@ -87,43 +87,47 @@ export const LoanSchedulePage: React.FC = () => {
           <table className="w-full text-left text-xs text-slate-300">
             <thead className="text-xs uppercase bg-slate-950 text-slate-400 border-b border-slate-800">
               <tr>
-                <th className="px-4 py-3">#</th>
-                <th className="px-4 py-3">Due Date</th>
-                <th className="px-4 py-3">Opening Principal</th>
-                <th className="px-4 py-3">Principal</th>
-                <th className="px-4 py-3">Interest</th>
-                <th className="px-4 py-3">Total Installment</th>
-                <th className="px-4 py-3">Paid Amount</th>
-                <th className="px-4 py-3">Remaining</th>
-                <th className="px-4 py-3">Status</th>
+                <th className="px-3 py-3">#</th>
+                <th className="px-3 py-3">Due Date</th>
+                <th className="px-3 py-3">Principal</th>
+                <th className="px-3 py-3">Interest</th>
+                <th className="px-3 py-3">Total Due</th>
+                <th className="px-3 py-3 text-emerald-400">Paid Prin</th>
+                <th className="px-3 py-3 text-amber-400">Paid Int</th>
+                <th className="px-3 py-3">Total Paid</th>
+                <th className="px-3 py-3">Remaining</th>
+                <th className="px-3 py-3">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800 font-mono">
               {schedule.map((item) => (
                 <tr key={item.installmentNumber} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="px-4 py-3 font-semibold text-white">{item.installmentNumber}</td>
-                  <td className="px-4 py-3 text-slate-300">
+                  <td className="px-3 py-3 font-semibold text-white">{item.installmentNumber}</td>
+                  <td className="px-3 py-3 text-slate-300">
                     {new Date(item.dueDate).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 text-slate-400">
-                    ₹{parseFloat(item.openingPrincipal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="px-4 py-3 text-emerald-400 font-medium">
+                  <td className="px-3 py-3 text-slate-300 font-medium">
                     ₹{parseFloat(item.scheduledPrincipal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </td>
-                  <td className="px-4 py-3 text-amber-400 font-medium">
+                  <td className="px-3 py-3 text-slate-300 font-medium">
                     ₹{parseFloat(item.scheduledInterest).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </td>
-                  <td className="px-4 py-3 font-bold text-white">
+                  <td className="px-3 py-3 font-bold text-white">
                     ₹{parseFloat(item.scheduledAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </td>
-                  <td className="px-4 py-3 text-emerald-400">
+                  <td className="px-3 py-3 text-emerald-400">
+                    ₹{parseFloat(item.paidPrincipal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-3 py-3 text-amber-400">
+                    ₹{parseFloat(item.paidInterest).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-3 py-3 text-emerald-300 font-semibold">
                     ₹{parseFloat(item.paidAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </td>
-                  <td className="px-4 py-3 font-semibold text-slate-100">
+                  <td className="px-3 py-3 font-semibold text-rose-300">
                     ₹{parseFloat(item.remainingAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </td>
-                  <td className="px-4 py-3 font-sans">
+                  <td className="px-3 py-3 font-sans">
                     <span
                       className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border ${getStatusBadgeClass(
                         item.status
